@@ -1,5 +1,8 @@
 use std::error::Error;
 use clap::{App,Arg};
+use std::io::{BufRead,BufReader};
+use std::io;
+use std::fs::File;
 
 #[derive(Debug)]
 pub struct Config {
@@ -11,7 +14,9 @@ pub struct Config {
 type MyResult<T> = Result<T,Box<dyn Error>>;
 
 pub fn run(config: Config) -> MyResult<()> {
-    dbg!(config);
+    for filename in config.files {
+        println!("{}",filename);
+    }
     Ok(())
 }
 
@@ -49,4 +54,11 @@ pub fn get_args() -> MyResult<Config> {
         number_lines: matches.is_present("number"),
         number_nonblank_lines: matches.is_present("number_nonblank")
     })
+}
+
+fn open(filename: &str) -> MyResult<Box<dyn BufRead>> {
+    match filename {
+        "-" => Ok(Box::new(BufReader::new(io::stdin()))),
+        _ => Ok(Box::new(BufReader::new(File::open(filename)?)))
+    }
 }
